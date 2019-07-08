@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.by.mapper.UserMapper">
+
+    <!--void insertUserRole(UserRoleVo userRoleVo);-->
+    <insert id="insertUserRole" parameterType="com.by.vo.UserRoleVo">
+        insert into t_user_role(user_id,role_id)
+        values 
+        <foreach collection="urvo.roles" item="roleId" separator=",">
+            <if test="roleId != null">
+                (#{urvo.userId},#{roleId})
+            </if>
+        </foreach>
+    </insert>
+
+    <!--List<User> findAll();-->
+    <select id="findAll" resultMap="findAllMap">
+        select
+            u.user_id as user_id,u.user_name as user_name ,r.role_name as role_name
+        from
+            (select * from t_user limit #{start},#{limit}) u left join t_user_role ur on u.user_id = ur.user_id
+            left join t_role r on ur.role_id = r.role_id
+    </select>
+
+    <resultMap id="findAllMap" type="com.by.vo.UserVO" autoMapping="true">
+        <id column="user_id" property="userId"></id>
+        <!-- ofType 泛型的类型  -->
+        <collection property="roles" ofType="com.by.model.Role" autoMapping="true">
+        </collection>
+    </resultMap>
+
+    <select id="findRolesByUserName" resultType="String">
+         select r.role_name from
+        t_user u left join t_user_role ur on u.user_id = ur.user_id
+        left join t_role r on ur.role_id = r.role_id
+        where u.user_name = #{userName}
+    </select>
+
+    <select id="findPermissionByUserName" resultType="String">
+        select p.permission_url from
+        t_user u left join t_user_role ur on u.user_id = ur.user_id
+        left join t_role r on ur.role_id = r.role_id
+        left join t_role_permission rp on r.role_id = rp.role_id
+        left join t_permission p on rp.permission_id = p.permission_id
+        where u.user_name = #{userName}
+    </select>
+
+
+</mapper>

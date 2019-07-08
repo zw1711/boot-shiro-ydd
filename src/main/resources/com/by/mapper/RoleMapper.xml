@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.by.mapper.RoleMapper">
+
+    
+    <!--List<Role> findAllAndPermission();-->
+    <select id="findAllAndPermission" resultMap="findAllAndPermissionMap">
+        select
+         r.role_id as role_id ,r.role_name as role_name ,p.permission_name
+         from
+        (select * from t_role limit #{start},#{limit}) r left join t_role_permission rp on r.role_id = rp.role_id
+        LEFT JOIN t_permission p on rp.permission_id = p.permission_id
+    </select>
+    
+    <resultMap id="findAllAndPermissionMap" type="com.by.vo.RoleVO" autoMapping="true">
+        <id column="role_id" property="roleId"></id>
+        <collection property="permissions" ofType="com.by.model.Permission" autoMapping="true"></collection>
+    </resultMap>
+    
+    
+    <insert id="rolePermissionsGive" >
+        insert into t_role_permission(role_id,permission_id)
+        values 
+        <foreach collection="rpvo.permissions" separator="," item="permission">
+            <if test="permission != null">
+                (#{rpvo.roleId},#{permission})
+            </if>
+        </foreach>
+    </insert>
+    
+</mapper>
